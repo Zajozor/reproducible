@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Vue and Vue Router -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+    <!-- Include Sentry -->
+    <script src="https://browser.sentry-cdn.com/5.25.0/bundle.min.js"></script>
+    <script src="https://browser.sentry-cdn.com/5.25.0/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <router-view></router-view>
+    </div>
+    <script>
+        const Block = {
+            props: { color: {required: true, type: String}},
+            template: '<b-card :style="`width: 300px; height: 500px; background-color: ${color};`" class="m-5">block</b-card>'
+        }
+        const View = {
+            components: { Block },
+            template: `<b-container><b-row>
+            <b-col>
+                <Block id="i1" color="lightcoral" />
+                <Block id="i2" color="lightblue" />
+                <Block id="i3" color="lightgoldenrodyellow" />
+                <Block id="i4" color="lightgreen" />
+                <Block id="i5" color="lightslategray" />
+                <Block id="i6" color="lightsalmon" />
+                <Block id="i7" color="lightsteelblue" />
+            </b-col>
+            <b-col class="fixed-top" style="margin-left: 50%;">
+                <b-list-group v-b-scrollspy>
+                    <b-list-group-item
+                      v-for="id in [1,2,3,4,5,6,7]"
+                      :key="'#i' + id"
+                      :href="'#i' + id"
+                    >
+                    {{ id }}
+                    </b-list-group-item>
+                </b-list-group>
+            </b-col>
+            </b-row></b-container>`,
+            created() {
+                this.$root.$on('bv::scrollspy::activate', this.onScrollSpyNavigate)
+            },
+            methods: {
+                onScrollSpyNavigate(target) {
+                    // The catch is needed to catch "NavigationDuplicated" (for the demonstration only)
+                    this.$router.replace({ hash: target }).catch(() => {})
+                }
+            }
+        }
+        new Vue({
+            router: new VueRouter({ routes: [ { path: '/', component: View } ] }),
+            el: '#app',
+        })
+        // The DSN here does not really matter, the problem happens with any
+        Sentry.init({
+            dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
+            integrations: [new Sentry.Integrations.Vue({ Vue, attachProps: true })],
+        })
+    </script>
+</body>
+</html>
